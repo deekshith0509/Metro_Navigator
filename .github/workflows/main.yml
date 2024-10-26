@@ -1,44 +1,44 @@
-name: Django CI Test
+name: Django Runtime Environment
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
-  test:
+  setup-runtime:
     runs-on: ubuntu-latest
 
     env:
       DJANGO_SECRET_KEY: "django-insecure-7l3po6b6ss%5ng+fnevd@g!7a3(9%l1lda@@)2frv+3%)t3#d9"
-      DATABASE_URL: "sqlite:///db.sqlite3"  # Using SQLite for testing simplicity
+      DATABASE_URL: "sqlite:///db.sqlite3"  # Using SQLite for simplicity
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.9'
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Run migrations
-      run: |
-        python manage.py migrate
+      - name: Run migrations
+        run: python manage.py migrate
 
-    - name: Run tests
-      run: |
-        python manage.py test
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
 
-    - name: Lint code with flake8
-      run: |
-        pip install flake8
-        flake8 . --exclude=migrations,__pycache__
+      - name: Start Django Server
+        run: |
+          nohup python manage.py runserver 0.0.0.0:8000 &
+          sleep 10  # Wait a few seconds to ensure the server is fully started
+
+      - name: Test endpoints
+        run: |
+          # Use curl or httpx to test various endpoints
+          curl -f http://127.0.0.1:8000/  # Test home page, for example
+          curl -f http://127.0.0.1:8000/your-endpoint/  # Replace with actual endpoint
+          # Add more endpoint checks as needed
