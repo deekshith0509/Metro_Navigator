@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">Route Details</h1>
+    
+    {% if error %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
+            <span class="block sm:inline">{{ error }}</span>
+        </div>
+    {% else %}
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="px-6 py-5">
+                <h2 class="text-2xl font-semibold text-gray-900">
+                    Journey from <span class="text-blue-600">{{ source }}</span> to <span class="text-blue-600">{{ destination }}</span>
+                </h2>
+                <p class="mt-2 text-gray-600">
+                    <strong>Total Time:</strong> {{ result.total_time }} minutes | 
+                    <strong>Distance:</strong> {{ result.total_distance|floatformat:2 }} meters
+                </p>
+            </div>
+                    <div>
+            {% if visualization_path %}
+                <img src="{{ visualization_path }}" alt="Metro Map" style="max-width: 100%; height: auto;">
+            {% else %}
+                <p>No map available.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div>
+            <div class="border-t border-gray-200">
+                <dl class="divide-y divide-gray-200">
+                    {% for segment in result.journey_details %}
+                        <div class="bg-{% if forloop.counter|divisibleby:2 %}gray-50{% else %}white{% endif %} px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                            <dt class="text-sm font-medium text-gray-500">
+                                {% if segment.is_interchange %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-200 text-yellow-800">
+                                        Interchange
+                                    </span>
+                                {% endif %}
+                            </dt>
+                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                {{ segment.from }} <strong>→</strong> {{ segment.to }}
+                                <br>
+                                <small class="text-gray-500">
+                                    <strong>Duration:</strong> {{ segment.time }} mins | <strong>Distance:</strong> {{ segment.distance }} m
+                                </small>
+                            </dd>
+                        </div>
+                    {% endfor %}
+                </dl>
+            </div>
+        </div>
+        
+        <div class="mt-8 flex justify-end">
+            <a href="{% url 'metro:home' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Start a New Search
+            </a>
+        </div>
+		
+    {% endif %}
+</div>
+{% endblock %}
